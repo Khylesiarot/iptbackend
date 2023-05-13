@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'corsheaders'
+    
 ]
 
 MIDDLEWARE = [
@@ -84,7 +85,7 @@ WSGI_APPLICATION = 'iptbackend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':  'backendgadz',
+        'NAME':  'iptbackend',
         'USER': 'root',
         'PASSWORD': 'siaroot',
         'HOST': 'localhost',
@@ -133,3 +134,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+

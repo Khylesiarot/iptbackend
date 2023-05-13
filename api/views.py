@@ -105,11 +105,25 @@ def getSubjectsAPI(request, offerCode=""):
 def getCollegesAPI(request, id=""):
     if request.method == 'POST':
         data = request.data
+        title = data.get('title', None)
+        description = data.get('description', None)
+
+        if not title or not description:
+            return Response({'error': 'Both title and description are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            existing_college = College.objects.get(title=title, description=description)
+            serializer = CollegeSerializer(existing_college)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except College.DoesNotExist:
+            pass
+
         serializer = CollegeSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     elif request.method == 'GET':
         college = College.objects.all()
@@ -185,11 +199,17 @@ def enrollment_list(request, student_id = ""):
         
     elif request.method == 'POST':
         data = request.data
+        student_id = data.get('student_id')
+        offer_code = data.get('offer_code')
+        existing_enrollment = Enrollment.objects.filter(student_id=student_id, offer_code=offer_code).first()
+        if existing_enrollment:
+            return Response({'error': 'Offer code already used by this student.'}, status=400)
         serializer = EnrollmentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+
 
 
 @csrf_exempt
@@ -215,3 +235,21 @@ def getRoutes(request):
     return Response(routes)
 
 
+class StudentSubjectView(APIView):
+    def get(self, request, student_id):
+        enrollments = Enrollment.objects.filter(student_id=student_id)
+        offer_codes = [enrollment.offer_code.offerCode for enrollment in enrollments]
+        subjects = Subject.objects.filter(offerCode__in=offer_codes)
+        serializer = SubjectSerializer(subjects, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    
+class TotalUnits(APIView):
+    def get(self, request, student_id):
+        enrollments = Enrollment.objects.filter(student_id=student_id)
+        offer_codes = [enrollment.offer_code.offerCode for enrollment in enrollments]
+        subjects = Subject.objects.filter(offerCode__in=offer_codes)
+        total_units = sum([subject.units for subject in subjects])
+        serializer = SubjectSerializer(subjects, many=True)
+        data = { "total_units": total_units}
+        return Response(data, status=status.HTTP_200_OK)

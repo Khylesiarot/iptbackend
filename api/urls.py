@@ -8,11 +8,13 @@ urlpatterns = [
     path('students/', views.getStudentsAPI),
     path('students/<str:id>', views.getUser),
     path('subjects/', views.getSubjectsAPI),
-     path('subjects/<str:offerCode>', views.getSubjectsAPI),
+    path('subjects/<str:offerCode>', views.getSubjectsAPI),
     path('colleges/', views.getCollegesAPI),
     path('colleges/<str:id>', views.getCollegesAPI),
      path('enrollment/', views.enrollment_list),
     path('enrollment/<str:student_id>', views.enrollment_list),
 
     path('login/', views.loginAPI),
+    path('students/<str:student_id>/subjects/', views.StudentSubjectView.as_view()),
+    path('students/<int:student_id>/units/', views.TotalUnits.as_view()),
     ]
